@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini Challenge Marathon - Framed Board</title>
+  <style>
+    :root {
+      --bg: #eef5ff;
+      --panel: #ffffff;
+      --ink: #162033;
+      --muted: #5d6f8d;
+      --accent: #2563eb;
+      --success: #059669;
+      --danger: #dc2626;
+      --board: min(86vw, 520px);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(147,197,253,.55), transparent 30%),
+        linear-gradient(135deg, #f8fbff 0%, var(--bg) 48%, #dbeafe 100%);
+      color: var(--ink);
+      padding: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .app {
+      width: min(1080px, 100%);
+      display: grid;
+      grid-template-columns: minmax(0, 700px) minmax(250px, 330px);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(96,165,250,.45);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 18px 50px rgba(37,99,235,.14);
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    .name-card {
+      width: min(460px, 100%);
+      margin: 0 auto;
+      padding: 22px;
+      text-align: center;
+      border: 2px solid #93c5fd;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+    }
+
+    label {
+      display: block;
+      font-weight: 900;
+      margin: 16px 0 8px;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 2px solid #cbd5e1;
+      font-size: 1rem;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 15px;
+      font-weight: 900;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      touch-action: manipulation;
+    }
+
+    button:active { transform: scale(.98); }
+    .secondary { background: #334155; }
+    .success { background: var(--success); }
+    .danger { background: var(--danger); }
+
+    .meta-bar {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      color: #312e81;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-weight: 900;
+      font-size: .92rem;
+    }
+
+    .challenge-header {
+      width: var(--board);
+      max-width: 100%;
+      margin: 0 auto 10px;
+      padding: 14px;
+      border: 1px solid #93c5fd;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f1f7ff 100%);
+      text-align: center;
+    }
+
+    .challenge-header h2 {
+      margin-bottom: 6px;
+    }
+
+    .instructions {
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .controls input {
+      max-width: 260px;
+    }
+
+    .game-board {
+      width: var(--board);
+      height: var(--board);
+      margin: 0 auto;
+      border: 2px solid #1d4ed8;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(191,219,254,.75), transparent 38%),
+        linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+      box-shadow: inset 0 0 0 1px rgba(147,197,253,.55), 0 14px 35px rgba(30,64,175,.12);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 8px;
+      font-weight: 900;
+    }
+
+    .scramble-letters {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 14px;
+    }
+
+    .letter-tile {
+      width: clamp(38px, 9vw, 54px);
+      height: clamp(38px, 9vw, 54px);
+      border: 3px solid #111827;
+      border-radius: 12px;
+      background: #fef3c7;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
+      font-weight: 1000;
+      transition: transform .32s ease;
+    }
+
+    .letter-tile.shuffle {
+      animation: wiggle .42s ease;
+    }
+
+    @keyframes wiggle {
+      0% { transform: translate(0, 0) rotate(0); }
+      25% { transform: translate(-15px, 10px) rotate(-12deg); }
+      50% { transform: translate(18px, -10px) rotate(14deg); }
+      75% { transform: translate(-8px, -8px) rotate(-10deg); }
+      100% { transform: translate(0, 0) rotate(0); }
+    }
+
+    .bubble-target {
+      position: absolute;
+      box-sizing: border-box;
+      left: 0;
+      top: 0;
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    .bubble {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 28%, rgba(255,255,255,.85) 0 9%, transparent 10%),
+        linear-gradient(145deg, rgba(191,219,254,.95), rgba(37,99,235,.78));
+      border: 1px solid rgba(29,78,216,.75);
+      box-shadow: 0 10px 24px rgba(37,99,235,.22);
+      pointer-events: none;
+      position: relative;
+    }
+
+    .bubble::after {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.35);
+    }
+
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      width: 88%;
+      max-width: 390px;
+    }
+
+    .card {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      border: 1px solid #3b82f6;
+      background: linear-gradient(160deg, #dbeafe, #eff6ff);
+      display: grid;
+      place-items: center;
+      font-size: clamp(1.4rem, 6vw, 2.3rem);
+      cursor: pointer;
+      font-weight: 900;
+      user-select: none;
+    }
+
+    .card.matched {
+      background: linear-gradient(160deg, #d1fae5, #ecfdf5);
+      border-color: #059669;
+      cursor: default;
+    }
+
+    .reaction-dot {
+      width: clamp(70px, 18vw, 105px);
+      height: clamp(70px, 18vw, 105px);
+      border-radius: 50%;
+      border: 5px solid #111827;
+      background: #fb7185;
+      position: absolute;
+      display: grid;
+      place-items: center;
+      font-size: 1.8rem;
+      font-weight: 1000;
+      cursor: pointer;
+      box-shadow: 0 14px 25px rgba(15,23,42,.20);
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .pattern-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(82px, 120px));
+      gap: 12px;
+      max-width: 430px;
+      width: 92%;
+    }
+
+    .pattern-buttons button {
+      border: 1px solid rgba(30,64,175,.38);
+      color: #162033;
+      min-height: 82px;
+      font-size: 1.05rem;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.45);
+    }
+
+    .score-list {
+      white-space: pre-wrap;
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 210px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .88rem;
+      overflow: auto;
+    }
+
+    .small { color: var(--muted); font-size: .9rem; }
+
+    @media (max-width: 900px) {
+      body { padding: 10px; }
+      .app { grid-template-columns: 1fr; }
+      .panel { padding: 12px; }
+      :root { --board: min(92vw, 520px); }
+      .challenge-header { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="panel">
+      <div id="startScreen" class="screen active">
+        <div class="name-card">
+          <h1>Mini Challenge Marathon</h1>
+          <p class="instructions">Enter your name first. The timer starts only after you press Start.</p>
+          <div class="pill" style="display:inline-block;margin-bottom:10px">Game code: <span id="startGameCode">----</span></div>
+          <p class="small">This code controls the game setup and is saved in this browser cache.</p>
+          <form id="nameForm">
+            <label for="playerName">Player name</label>
+            <input id="playerName" type="text" autocomplete="name" placeholder="Type your name..." required autofocus />
+            <div style="margin-top:14px">
+              <button type="submit">Start Game</button>
+            </div>
+          </form>
+          <p id="nameError" class="status" style="color:#dc2626"></p>
+        </div>
+      </div>
+
+      <div id="gameScreen" class="screen">
+        <div class="meta-bar">
+          <div class="pill">Player: <span id="playerLabel"></span></div>
+          <div class="pill">Code: <span id="gameCodeLabel"></span></div>
+          <div class="pill">Challenge <span id="challengeNum">1</span>/<span id="challengeTotal">6</span></div>
+          <div class="pill">Time: <span id="timer">0.0</span>s</div>
+        </div>
+        <div id="challengeHeader" class="challenge-header"></div>
+        <div id="gameBoard" class="game-board"></div>
+      </div>
+
+      <div id="finishScreen" class="screen">
+        <div class="challenge-header">
+          <h1>Finished!</h1>
+          <p><strong id="finishName"></strong>, your time was <strong><span id="finishTime"></span>s</strong>.</p>
+        </div>
+        <div class="game-board">
+          <button id="playAgain" class="success">Play Again</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2>Completion Board</h2>
+      <p class="small">Reads and writes completion results from your Supabase <code>sessions</code> table.</p>
+      <div id="scoreList" class="score-list">Loading scores...</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px">
+        <button id="exportScores" class="secondary">Export visible scores</button>
+        <button id="clearScores" class="danger">Clear visible scores</button>
+      </div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    "use strict";
+
+    // TODO: paste your Supabase values here.
+    // Supabase > Project Settings > API
+    const SUPABASE_URL = "https://cuufksysclrisxxvfwwp.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_6pLGLRDa45-58xz_vm8htA_mTbnlvhX";
+
+    // This page expects a Supabase table named "sessions" with columns:
+    // timestamp timestamp with time zone default now(), player_name text, duration integer
+    // duration is saved as rounded seconds.
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const SCRAMBLE_WORDS = [
+      "apple","beach","brain","candy","chair","cloud","dance","dream","eagle","flame",
+      "ghost","grape","happy","horse","jelly","lemon","magic","mango","music","ninja",
+      "ocean","paint","party","pearl","pizza","plant","queen","quick","river","robot",
+      "rocket","smile","snake","spark","spoon","storm","sugar","tiger","toast","train",
+      "water","whale","zebra","angel","badge","banjo","bloom","brick","brush","camel",
+      "charm","chess","coral","crisp","crown","daisy","delta","donut","drift","fairy",
+      "flash","flute","frost","giant","globe","honey","ivory","joker","koala","laser",
+      "lunar","maple","melon","minty","novel","olive","orbit","panda","piano","pixel",
+      "prize","puffy","raven","salsa","scarf","shell","skate","slime","snack","solar",
+      "spice","straw","sunny","sushi","swift","tulip","uncle","vivid","waltz","yacht"
+    ];
+
+    const startScreen = document.getElementById("startScreen");
+    const gameScreen = document.getElementById("gameScreen");
+    const finishScreen = document.getElementById("finishScreen");
+    const nameForm = document.getElementById("nameForm");
+    const playerNameInput = document.getElementById("playerName");
+    const playerLabel = document.getElementById("playerLabel");
+    const challengeHeader = document.getElementById("challengeHeader");
+    const gameBoard = document.getElementById("gameBoard");
+    const challengeNum = document.getElementById("challengeNum");
+    const challengeTotal = document.getElementById("challengeTotal");
+    const timerEl = document.getElementById("timer");
+    const scoreList = document.getElementById("scoreList");
+
+    let playerName = "";
+    let startTime = 0;
+    let timerHandle = null;
+    let challengeIndex = 0;
+    let bubbleTimer = null;
+    let bubbleState = [];
+    let currentScrambleWord = "";
+    let currentLetters = [];
+    let scores = [];
+    let gameCode = "";
+    let rng = Math.random;
+    let gamePlan = null;
+
+    const challenges = [
+      scrambleChallenge,
+      mathChallenge,
+      bubbleChallenge,
+      reactionChallenge,
+      memoryChallenge,
+      patternChallenge
+    ];
+    challengeTotal.textContent = challenges.length;
+
+    function makeGameCode() {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      let code = "";
+      for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * letters.length)];
+      return code;
+    }
+
+    function hashCode(str) {
+      let h = 2166136261;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function mulberry32(seed) {
+      return function() {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function initGameCode() {
+      gameCode = makeGameCode();
+      localStorage.setItem("miniChallengeLastCode", gameCode);
+      localStorage.setItem("miniChallengeCode_" + gameCode, JSON.stringify({
+        code: gameCode,
+        created: new Date().toISOString()
+      }));
+      document.getElementById("startGameCode").textContent = gameCode;
+    }
+
+    function seededShuffle(arr) {
+      const copy = arr.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function seededRandomItem(arr) {
+      return arr[Math.floor(rng() * arr.length)];
+    }
+
+    function buildGamePlan(code) {
+      rng = mulberry32(hashCode(code));
+      const colors = ["red","blue","green","yellow","purple","orange"];
+      return {
+        scrambleWord: seededRandomItem(SCRAMBLE_WORDS),
+        pattern: Array.from({ length: 5 }, () => colors[Math.floor(rng() * colors.length)]),
+        math: buildSeededMathProblem(),
+        memorySymbols: seededShuffle(["◆","◆","●","●","▲","▲","■","■","✦","✦","⬢","⬢"]),
+        reactionPositions: Array.from({ length: 7 }, () => ({
+          x: Math.floor(rng() * 76) + 8,
+          y: Math.floor(rng() * 76) + 8
+        }))
+      };
+    }
+
+    function seededInt(min, max) {
+      return Math.floor(rng() * (max - min + 1)) + min;
+    }
+
+    function buildSeededMathProblem() {
+      const candidates = [];
+
+      for (let a = 8; a <= 49; a++) {
+        for (let b = 8; b <= 49; b++) {
+          const sum = a + b;
+          if (sum < 100) candidates.push({ text: `${a} + ${b}`, answer: sum });
+        }
+      }
+
+      for (let a = 40; a <= 99; a++) {
+        for (let b = 6; b <= 39; b++) {
+          const diff = a - b;
+          if (diff > 10 && diff < 100) candidates.push({ text: `${a} - ${b}`, answer: diff });
+        }
+      }
+
+      for (let a = 3; a <= 12; a++) {
+        for (let b = 3; b <= 12; b++) {
+          const product = a * b;
+          if (product < 100) candidates.push({ text: `${a} × ${b}`, answer: product });
+        }
+      }
+
+      for (let a = 2; a <= 9; a++) {
+        for (let b = 2; b <= 9; b++) {
+          for (let c = 5; c <= 45; c++) {
+            const val = a * b + c;
+            if (val < 100) candidates.push({ text: `${a} × ${b} + ${c}`, answer: val });
+          }
+        }
+      }
+
+      return candidates[Math.floor(rng() * candidates.length)];
+    }
+
+    function showOnly(screen) {
+      [startScreen, gameScreen, finishScreen].forEach(s => s.classList.remove("active"));
+      screen.classList.add("active");
+    }
+
+    function formatTime(ms) {
+      return (ms / 1000).toFixed(1);
+    }
+
+    function startTimer() {
+      startTime = performance.now();
+      timerHandle = setInterval(() => {
+        timerEl.textContent = formatTime(performance.now() - startTime);
+      }, 100);
+    }
+
+    function stopTimer() {
+      clearInterval(timerHandle);
+      timerHandle = null;
+      return formatTime(performance.now() - startTime);
+    }
+
+    function clearChallenge() {
+      clearInterval(bubbleTimer);
+      bubbleTimer = null;
+      bubbleState = [];
+      challengeHeader.innerHTML = "";
+      gameBoard.innerHTML = "";
+    }
+
+    function nextChallenge() {
+      challengeIndex++;
+      if (challengeIndex >= challenges.length) finishGame();
+      else renderChallenge();
+    }
+
+    function renderChallenge() {
+      clearChallenge();
+      challengeNum.textContent = challengeIndex + 1;
+      challenges[challengeIndex]();
+    }
+
+    function shuffleArray(arr) {
+      const copy = arr.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    nameForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = playerNameInput.value.trim();
+      if (!name) {
+        document.getElementById("nameError").textContent = "Please enter your name before starting.";
+        playerNameInput.focus();
+        return;
+      }
+      playerName = name;
+      playerLabel.textContent = playerName;
+      document.getElementById("gameCodeLabel").textContent = gameCode;
+      gamePlan = buildGamePlan(gameCode);
+      challengeIndex = 0;
+      timerEl.textContent = "0.0";
+      showOnly(gameScreen);
+      startTimer();
+      renderChallenge();
+    });
+
+    document.getElementById("playAgain").addEventListener("click", () => {
+      playerNameInput.value = "";
+      initGameCode();
+      showOnly(startScreen);
+      setTimeout(() => playerNameInput.focus(), 50);
+    });
+
+    function setHeader(title, instructions, controlsHtml = "", statusId = "status") {
+      challengeHeader.innerHTML = `
+        <h2>${title}</h2>
+        <p class="instructions">${instructions}</p>
+        ${controlsHtml}
+        <div id="${statusId}" class="status"></div>
+      `;
+    }
+
+    function finishGame() {
+      const finalTime = stopTimer();
+      clearChallenge();
+      showOnly(finishScreen);
+      document.getElementById("finishName").textContent = playerName;
+      document.getElementById("finishTime").textContent = finalTime;
+      addScore(playerName, finalTime);
+    }
+
+    function scrambleChallenge() {
+      currentScrambleWord = gamePlan.scrambleWord;
+      currentLetters = seededShuffle(currentScrambleWord.toUpperCase().split(""));
+      while (currentLetters.join("") === currentScrambleWord.toUpperCase()) {
+        currentLetters = seededShuffle(currentLetters);
+      }
+
+      setHeader(
+        "Word Scramble",
+        "Unscramble the word. Use Enter or the Submit button.",
+        `<div class="controls">
+          <input id="scrambleInput" type="text" placeholder="Your answer..." autocomplete="off" />
+          <button id="scrambleSubmit" type="button">Submit</button>
+        </div>`,
+        "scrambleStatus"
+      );
+
+      const holder = document.createElement("div");
+      holder.id = "scrambleLetters";
+      holder.className = "scramble-letters";
+      gameBoard.appendChild(holder);
+      drawScrambleLetters(false);
+
+      const input = document.getElementById("scrambleInput");
+      const submit = document.getElementById("scrambleSubmit");
+      const status = document.getElementById("scrambleStatus");
+
+      function checkGuess() {
+        const guess = input.value.trim().toLowerCase();
+        if (guess === currentScrambleWord) {
+          status.textContent = "Correct!";
+          status.style.color = "#16a34a";
+          setTimeout(nextChallenge, 400);
+        } else {
+          status.textContent = "Nope — shuffled!";
+          status.style.color = "#dc2626";
+          currentLetters = shuffleArray(currentLetters);
+          drawScrambleLetters(true);
+          input.value = "";
+          input.focus();
+        }
+      }
+
+      submit.addEventListener("click", checkGuess);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") checkGuess();
+      });
+      input.focus();
+    }
+
+    function drawScrambleLetters(animated) {
+      const holder = document.getElementById("scrambleLetters");
+      holder.innerHTML = "";
+      currentLetters.forEach((letter, idx) => {
+        const tile = document.createElement("span");
+        tile.className = "letter-tile" + (animated ? " shuffle" : "");
+        tile.style.transitionDelay = (idx * 20) + "ms";
+        tile.textContent = letter;
+        holder.appendChild(tile);
+      });
+    }
+
+    function mathChallenge() {
+      const problemData = gamePlan.math;
+      const answer = problemData.answer;
+      const text = problemData.text;
+
+      setHeader(
+        "Quick Math",
+        "Medium round: mental math only. The answer is always less than 100.",
+        `<div class="controls">
+          <input id="mathInput" type="number" placeholder="Answer..." inputmode="numeric" />
+          <button id="mathSubmit" type="button">Submit</button>
+        </div>`,
+        "mathStatus"
+      );
+
+      const problem = document.createElement("h1");
+      problem.textContent = `${text} = ?`;
+      problem.style.fontSize = "clamp(2rem, 9vw, 4.4rem)";
+      problem.style.padding = "18px";
+      problem.style.textAlign = "center";
+      gameBoard.appendChild(problem);
+
+      const input = document.getElementById("mathInput");
+      const submit = document.getElementById("mathSubmit");
+      const status = document.getElementById("mathStatus");
+
+      function checkMath() {
+        if (Number(input.value) === answer) nextChallenge();
+        else {
+          status.textContent = "Try again!";
+          status.style.color = "#dc2626";
+          input.select();
+        }
+      }
+
+      submit.addEventListener("click", checkMath);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") checkMath();
+      });
+      input.focus();
+    }
+
+    function bubbleChallenge() {
+      let popped = 0;
+      const goal = 8;
+
+      setHeader("Bubble Pop", `Pop ${goal} bubbles. The invisible tap target is larger, but bubbles stay the same size.`, "", "bubbleStatus");
+      document.getElementById("bubbleStatus").textContent = `Popped: 0/${goal}`;
+
+      for (let i = 0; i < goal; i++) spawnBubble();
+
+      bubbleTimer = setInterval(() => {
+        const boardW = gameBoard.clientWidth;
+        const boardH = gameBoard.clientHeight;
+        const size = 86;
+        bubbleState.forEach(b => {
+          if (b.popped) return;
+          b.x += b.vx;
+          b.y += b.vy;
+
+          if (b.x <= 0 || b.x >= boardW - size) b.vx *= -1;
+          if (b.y <= 0 || b.y >= boardH - size) b.vy *= -1;
+
+          b.x = Math.max(0, Math.min(boardW - size, b.x));
+          b.y = Math.max(0, Math.min(boardH - size, b.y));
+          b.el.style.transform = `translate(${b.x}px, ${b.y}px)`;
+        });
+      }, 16);
+
+      function spawnBubble() {
+        const target = document.createElement("div");
+        target.className = "bubble-target";
+        target.innerHTML = '<div class="bubble"></div>';
+
+        const boardW = gameBoard.clientWidth;
+        const boardH = gameBoard.clientHeight;
+        const size = 86;
+        const speed = 0.85;
+        const b = {
+          el: target,
+          x: Math.random() * Math.max(1, boardW - size),
+          y: Math.random() * Math.max(1, boardH - size),
+          vx: (Math.random() < .5 ? -1 : 1) * ((3.7 + Math.random() * 3.2) * speed),
+          vy: (Math.random() < .5 ? -1 : 1) * ((3.7 + Math.random() * 3.2) * speed),
+          popped: false
+        };
+
+        target.style.transform = `translate(${b.x}px, ${b.y}px)`;
+        target.addEventListener("pointerdown", () => {
+          if (b.popped) return;
+          b.popped = true;
+          target.remove();
+          popped++;
+          document.getElementById("bubbleStatus").textContent = `Popped: ${popped}/${goal}`;
+          if (popped >= goal) nextChallenge();
+        });
+
+        bubbleState.push(b);
+        gameBoard.appendChild(target);
+      }
+    }
+
+    function reactionChallenge() {
+      let hits = 0;
+      const goal = 7;
+      setHeader("Reaction Dots", `Tap ${goal} dots as they appear.`, "", "reactionStatus");
+      document.getElementById("reactionStatus").textContent = `Hits: 0/${goal}`;
+
+      function showDot() {
+        gameBoard.innerHTML = "";
+        const dot = document.createElement("div");
+        dot.className = "reaction-dot";
+        dot.textContent = "TAP";
+        const pos = gamePlan.reactionPositions[hits % gamePlan.reactionPositions.length];
+        dot.style.left = `calc(${pos.x}% - 45px)`;
+        dot.style.top = `calc(${pos.y}% - 45px)`;
+        dot.addEventListener("pointerdown", () => {
+          hits++;
+          document.getElementById("reactionStatus").textContent = `Hits: ${hits}/${goal}`;
+          if (hits >= goal) nextChallenge();
+          else showDot();
+        });
+        gameBoard.appendChild(dot);
+      }
+
+      showDot();
+    }
+
+    function memoryChallenge() {
+      setHeader("Memory Match", "Flip cards and match all pairs.", "", "memoryStatus");
+      const grid = document.createElement("div");
+      grid.className = "memory-grid";
+      gameBoard.appendChild(grid);
+
+      let first = null;
+      let lock = false;
+      let matches = 0;
+
+      gamePlan.memorySymbols.forEach(sym => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.dataset.sym = sym;
+        card.textContent = "?";
+        card.addEventListener("pointerdown", () => {
+          if (lock || card.classList.contains("matched") || card === first) return;
+          card.textContent = sym;
+          if (!first) {
+            first = card;
+          } else if (first.dataset.sym === card.dataset.sym) {
+            first.classList.add("matched");
+            card.classList.add("matched");
+            first = null;
+            matches++;
+            if (matches === gamePlan.memorySymbols.length / 2) setTimeout(nextChallenge, 450);
+          } else {
+            lock = true;
+            setTimeout(() => {
+              first.textContent = "?";
+              card.textContent = "?";
+              first = null;
+              lock = false;
+            }, 650);
+          }
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    function patternChallenge() {
+      const sequence = gamePlan.pattern;
+      const colorMap = {
+        red: "#bfdbfe",
+        blue: "#93c5fd",
+        green: "#bbf7d0",
+        yellow: "#fde68a",
+        purple: "#ddd6fe",
+        orange: "#fed7aa"
+      };
+      let pos = 0;
+      let accepting = false;
+
+      setHeader("Pattern Recall", `Watch the 5-color sequence, then repeat it.`, "", "patternStatus");
+
+      const holder = document.createElement("div");
+      holder.className = "pattern-buttons";
+      gameBoard.appendChild(holder);
+
+      const buttons = {};
+      Object.keys(colorMap).forEach(name => {
+        const btn = document.createElement("button");
+        btn.textContent = name.toUpperCase();
+        btn.style.background = colorMap[name];
+        btn.disabled = true;
+        btn.addEventListener("pointerdown", () => {
+          if (!accepting) return;
+          if (name === sequence[pos]) {
+            pos++;
+            document.getElementById("patternStatus").textContent = `Good: ${pos}/${sequence.length}`;
+            if (pos === sequence.length) setTimeout(nextChallenge, 350);
+          } else {
+            pos = 0;
+            document.getElementById("patternStatus").textContent = "Wrong color. Watch it again.";
+            accepting = false;
+            Object.values(buttons).forEach(b => b.disabled = true);
+            setTimeout(playSequence, 750);
+          }
+        });
+        buttons[name] = btn;
+        holder.appendChild(btn);
+      });
+
+      function flashButton(name, on) {
+        const btn = buttons[name];
+        if (!btn) return;
+        btn.style.transform = on ? "scale(1.08)" : "";
+        btn.style.filter = on ? "brightness(1.22) saturate(1.25)" : "";
+        btn.style.boxShadow = on ? "0 0 0 5px rgba(37,99,235,.22), 0 12px 24px rgba(30,64,175,.18)" : "";
+      }
+
+      function playSequence() {
+        let count = 3;
+        const status = document.getElementById("patternStatus");
+        status.textContent = `Get ready: ${count}`;
+        const countdown = setInterval(() => {
+          count--;
+          if (count > 0) {
+            status.textContent = `Get ready: ${count}`;
+          } else {
+            clearInterval(countdown);
+            status.textContent = "Watch...";
+            let i = 0;
+            const step = () => {
+              if (i >= sequence.length) {
+                status.textContent = "Repeat the sequence now.";
+                accepting = true;
+                Object.values(buttons).forEach(b => b.disabled = false);
+                return;
+              }
+              const color = sequence[i];
+              flashButton(color, true);
+              setTimeout(() => {
+                flashButton(color, false);
+                i++;
+                setTimeout(step, 240);
+              }, 520);
+            };
+            setTimeout(step, 350);
+          }
+        }, 700);
+      }
+
+      playSequence();
+    }
+
+    async function loadScores() {
+      scoreList.textContent = "Loading scores from Supabase...";
+
+      const { data, error } = await supabaseClient
+        .from("sessions")
+        .select("timestamp, player_name, duration")
+        .order("duration", { ascending: true })
+        .limit(25);
+
+      if (error) {
+        console.error(error);
+        scoreList.textContent = "Could not load scores from Supabase. Check your URL/key, table name, and RLS select policy.\n\n" + error.message;
+        return;
+      }
+
+      scores = (data || []).map(row => ({
+        name: row.player_name,
+        time: row.duration,
+        date: row.timestamp ? new Date(row.timestamp).toLocaleString() : ""
+      }));
+
+      renderScores();
+    }
+
+    async function addScore(name, time) {
+      const durationSeconds = Math.round(Number(time));
+
+      const { error } = await supabaseClient
+        .from("sessions")
+        .insert({
+          player_name: name,
+          duration: durationSeconds
+        });
+
+      if (error) {
+        console.error(error);
+        scoreList.textContent = "Finished, but could not save to Supabase.\n\n" + error.message;
+        return;
+      }
+
+      await loadScores();
+    }
+
+    function renderScores() {
+      scoreList.textContent = scores.length
+        ? scores.map((s,i) => `${i+1}. ${s.name} - ${s.time}s - ${s.date}`).join("\n")
+        : "No completions in Supabase yet.";
+    }
+
+    document.getElementById("exportScores").addEventListener("click", () => {
+      const text = scores.map((s,i) => `${i+1}. ${s.name} - ${s.time}s - ${s.date}`).join("\n") || "No scores yet.";
+      const blob = new Blob([text], {type:"text/plain"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "scores.txt";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    document.getElementById("clearScores").addEventListener("click", () => {
+      scores = [];
+      renderScores();
+    });
+
+    loadScores();
+    initGameCode();
+    showOnly(startScreen);
+    setTimeout(() => playerNameInput.focus(), 100);
+  </script>
+</body>
+</html>
