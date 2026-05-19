@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>Daily Mini Challenge Marathon v9</title>
   <style>
     :root {
@@ -17,7 +17,7 @@
       --board: min(86vw, 520px);
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { touch-action: manipulation; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+    html, body { touch-action: none; overscroll-behavior: none; -webkit-text-size-adjust: 100%; -webkit-user-select: none; user-select: none; }
     body {
       margin: 0; min-height: 100vh;
       user-select: none; -webkit-user-select: none;
@@ -140,14 +140,28 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
-    // Mobile safety: prevent double-tap zoom / accidental page gestures during rapid arcade tapping.
+    // Mobile safety: hard-lock browser zoom/scroll gestures during arcade play.
+    // iOS Safari can still zoom despite viewport settings, so we also block
+    // double-tap, pinch, wheel-zoom, and touch scrolling while the game screen is active.
     let lastTouchEnd = 0;
+    function isPlayingGame() { return gameScreen && gameScreen.classList.contains("active"); }
+    function isArcadeTouchTarget(e) { return isPlayingGame() && e.target && e.target.closest && e.target.closest("#gameBoard, button"); }
+    document.addEventListener("touchstart", (e) => {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+      if (isArcadeTouchTarget(e)) e.preventDefault();
+    }, { passive: false });
+    document.addEventListener("touchmove", (e) => {
+      if (isPlayingGame()) e.preventDefault();
+    }, { passive: false });
     document.addEventListener("touchend", (e) => {
       const now = Date.now();
-      if (now - lastTouchEnd <= 350) e.preventDefault();
+      if (now - lastTouchEnd <= 500 || isArcadeTouchTarget(e)) e.preventDefault();
       lastTouchEnd = now;
     }, { passive: false });
+    document.addEventListener("dblclick", (e) => e.preventDefault(), { passive: false });
     document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
+    document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
+    document.addEventListener("wheel", (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 
     const SCRAMBLE_WORDS = ["apple","beach","brain","candy","chair","cloud","dance","dream","eagle","flame","ghost","grape","happy","horse","jelly","lemon","magic","mango","music","ninja","ocean","paint","party","pearl","pizza","plant","queen","quick","river","robot","rocket","smile","snake","spark","spoon","storm","sugar","tiger","toast","train","water","whale","zebra","badge","banjo","bloom","brick","brush","camel","charm","chess","coral","crisp","crown","daisy","delta","donut","drift","flash","flute","frost","giant","globe","honey","joker","koala","laser","lunar","maple","melon","minty","novel","olive","orbit","panda","piano","pixel","prize","raven","salsa","scarf","shell","skate","snack","solar","spice","straw","sunny","sushi","swift","tulip","vivid","waltz","yacht"];
     const GLYPHS = ["★","●","▲","■","◆","✦","⬢","✚"];
@@ -344,12 +358,14 @@
     }
     function bubbleChallenge(){
       let popped=0, speedMult=1;
-      const goal=currentRun.bubbleSeeds.length;
-      setHeader("Bubble Frenzy", `Pop all ${goal} bubbles. They get faster and smaller, but mobile taps are locked from zooming the page.`, "", "bubbleStatus");
+      const isMobile = window.matchMedia("(pointer: coarse), (max-width: 700px)").matches;
+      const sourceSeeds = isMobile ? currentRun.bubbleSeeds.slice(0,10) : currentRun.bubbleSeeds;
+      const goal=sourceSeeds.length;
+      setHeader("Bubble Frenzy", `Pop all ${goal} bubbles. Mobile mode uses slower bubbles and larger tap zones.`, "", "bubbleStatus");
       const status=document.getElementById("bubbleStatus");
       status.textContent=`Popped: 0/${goal}`;
       const bubbles=[];
-      currentRun.bubbleSeeds.forEach((seed,i)=>spawn(seed,i));
+      sourceSeeds.forEach((seed,i)=>spawn(seed,i));
       addTimer(setInterval(()=>{
         const bw=gameBoard.clientWidth,bh=gameBoard.clientHeight;
         bubbles.forEach(b=>{
@@ -362,24 +378,35 @@
           b.el.style.transform=`translate(${b.x}px,${b.y}px)`;
         });
       },16));
+      function popBubble(b, target){
+        if(b.dead)return;
+        b.dead=true; target.remove(); popped++;
+        speedMult += isMobile ? (b.gold ? .045 : .025) : (b.gold ? .16 : .08);
+        status.textContent=`Popped: ${popped}/${goal}${b.gold?"  GOLD SPEED-UP!":""}`;
+        bubbles.forEach(other=>{
+          if(!other.dead){
+            other.size=Math.max(isMobile?58:34, other.size-(isMobile?1:2));
+            other.inner=Math.max(isMobile?40:26, other.inner-(isMobile?1:2));
+            other.el.style.width=other.size+"px"; other.el.style.height=other.size+"px";
+            other.bubble.style.width=other.inner+"px"; other.bubble.style.height=other.inner+"px";
+          }
+        });
+        if(popped>=goal) nextChallenge();
+      }
       function spawn(seed,i){
         const target=document.createElement("div");
         const bubble=document.createElement("div");
         bubble.className="bubble"+(seed.gold?" gold":"");
         target.className="bubble-target"; target.appendChild(bubble);
-        const size=Math.max(36,78-i*3), inner=Math.max(26,54-i*2);
+        const size=isMobile ? Math.max(70,96-i*2) : Math.max(40,82-i*3);
+        const inner=isMobile ? Math.max(48,66-i*2) : Math.max(28,56-i*2);
         target.style.width=size+"px"; target.style.height=size+"px"; bubble.style.width=inner+"px"; bubble.style.height=inner+"px";
         const bw=gameBoard.clientWidth||520,bh=gameBoard.clientHeight||520;
-        const b={el:target,size,x:(seed.x/100)*(bw-size),y:(seed.y/100)*(bh-size),vx:seed.vx*(2.55+i*.26),vy:seed.vy*(2.55+i*.26),dead:false,gold:seed.gold};
+        const baseSpeed = isMobile ? (1.05+i*.055) : (2.15+i*.19);
+        const b={el:target,bubble,size,inner,x:(seed.x/100)*(bw-size),y:(seed.y/100)*(bh-size),vx:seed.vx*baseSpeed,vy:seed.vy*baseSpeed,dead:false,gold:seed.gold};
         target.style.transform=`translate(${b.x}px,${b.y}px)`;
-        target.addEventListener("pointerdown",()=>{
-          if(b.dead)return;
-          b.dead=true; target.remove(); popped++;
-          speedMult += b.gold ? .24 : .13;
-          status.textContent=`Popped: ${popped}/${goal}${b.gold?"  GOLD SPEED-UP!":""}`;
-          bubbles.forEach(other=>{ if(!other.dead){ other.size=Math.max(32, other.size-3); other.el.style.width=other.size+"px"; other.el.style.height=other.size+"px"; } });
-          if(popped>=goal) nextChallenge();
-        });
+        target.addEventListener("pointerdown",(e)=>{ e.preventDefault(); popBubble(b,target); }, { passive:false });
+        target.addEventListener("touchstart",(e)=>{ e.preventDefault(); popBubble(b,target); }, { passive:false });
         bubbles.push(b); gameBoard.appendChild(target);
       }
     }
