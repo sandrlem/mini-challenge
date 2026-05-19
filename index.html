@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- VERSION: v14 | BUILD_ID: 2026-05-19-v14-version-verified -->
+<!-- VERSION: v15 | BUILD_ID: 2026-05-19-update4d-v15-fixed -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>Daily Mini Challenge Marathon v14</title>
+  <title>Daily Mini Challenge Marathon v15</title>
   <style>
     :root {
       --bg: #eef5ff;
@@ -52,7 +52,7 @@
     .score-list, .splits-box { white-space:pre-wrap; background:#0f172a; color:#e5e7eb; border-radius:12px; padding:12px; min-height:210px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.88rem; overflow:auto; }
     .scramble-letters, .number-grid, .sort-grid, .arrow-row { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; padding:14px; }
     .letter-tile, .num-tile, .sort-card, .arrow-key { border:3px solid #111827; border-radius:12px; background:#fef3c7; display:inline-flex; justify-content:center; align-items:center; font-weight:1000; cursor:pointer; }
-    .letter-tile { width:clamp(38px,9vw,54px); height:clamp(38px,9vw,54px); font-size:clamp(1.2rem,5vw,1.8rem); transition: transform .18s ease; } .letter-tile.used { opacity:.28; transform:scale(.86); pointer-events:none; } .answer-tray { min-height:52px; margin:10px auto 2px; padding:8px 10px; width:min(92%,390px); border:2px dashed #60a5fa; border-radius:14px; background:#eff6ff; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; font-weight:1000; letter-spacing:.08em; } .answer-slot { min-width:28px; height:34px; border-bottom:3px solid #1d4ed8; display:grid; place-items:center; font-size:1.35rem; }
+    .letter-tile { width:clamp(40px,10vw,58px); height:clamp(40px,10vw,58px); font-size:clamp(1.25rem,5.4vw,1.9rem); transition: transform .18s ease, opacity .18s ease; background:#fef3c7; color:#111827; border-color:#111827; box-shadow:0 7px 12px rgba(15,23,42,.12); } .letter-tile.used { opacity:.55; transform:scale(.9); pointer-events:none; filter:none; } .answer-tray { min-height:52px; margin:10px auto 2px; padding:8px 10px; width:min(92%,390px); border:2px dashed #60a5fa; border-radius:14px; background:#eff6ff; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; font-weight:1000; letter-spacing:.08em; cursor:pointer; } .answer-slot { min-width:28px; height:34px; border-bottom:3px solid #1d4ed8; display:grid; place-items:center; font-size:1.35rem; color:#111827; }
     .num-tile { width:clamp(42px,10vw,60px); height:clamp(42px,10vw,60px); font-size:clamp(1.1rem,4.8vw,1.7rem); background:linear-gradient(145deg,#fef08a,#f97316); color:#111827; box-shadow:0 8px 16px rgba(15,23,42,.14); }
     .num-tile:nth-child(3n+1){ background:linear-gradient(145deg,#bfdbfe,#3b82f6); color:white; }
     .num-tile:nth-child(3n+2){ background:linear-gradient(145deg,#bbf7d0,#10b981); color:#052e16; }
@@ -94,7 +94,7 @@
     <section class="panel">
       <div id="startScreen" class="screen active">
         <div class="name-card">
-          <h1>Daily Mini Challenge Marathon v14</h1>
+          <h1>Daily Mini Challenge Marathon v15</h1>
           <p class="instructions">One timer. Every mini-game in the challenge. Daily Mode keeps the same content for the same date.</p>
           <div class="pill" style="display:inline-block;margin-bottom:10px">Daily Run: <span id="startGameCode">----</span></div>
           <p class="small">Daily Mode is leaderboard eligible. Practice Mode is randomized and does not save.</p>
@@ -116,8 +116,8 @@
           <div class="pill">Challenge <span id="challengeNum">1</span>/<span id="challengeTotal">11</span></div>
           <div class="pill game-pill">Game: <span id="currentGameLabel">----</span></div>
           <div class="pill">Time: <span id="timer">0.0</span>s</div>
-          <div class="pill">VERSION: v14</div>
-          <div class="pill">BUILD_ID: 2026-05-19-v14-version-verified</div>
+          <div class="pill">VERSION: v15</div>
+          <div class="pill">BUILD_ID: 2026-05-19-update4d-v15-fixed</div>
         </div>
         <div id="challengeHeader" class="challenge-header"></div>
         <div id="gameBoard" class="game-board"></div>
@@ -335,41 +335,71 @@
       let letters=seededShuffle(word.toUpperCase().split(""));
       while(letters.join("")===word.toUpperCase()) letters=seededShuffle(letters);
       let picked=[];
-      setHeader("Snap Unscramble", "Tap the letters in order. No typing needed.", `<div class="controls"><button id="scrambleUndo" type="button" class="secondary">Undo</button><button id="scrambleClear" type="button" class="danger">Clear</button></div>`, "scrambleStatus");
+      setHeader("Snap Unscramble", "Tap letters to build the word. Tap your answer to undo the last letter.", "", "scrambleStatus");
       const tray=document.createElement("div"); tray.className="answer-tray";
       const holder=document.createElement("div"); holder.className="scramble-letters";
       gameBoard.style.flexDirection="column";
       gameBoard.appendChild(tray); gameBoard.appendChild(holder);
       const status=document.getElementById("scrambleStatus");
+      function undoLast(){
+        if(!picked.length) return;
+        picked.pop();
+        status.textContent="";
+        status.style.color="";
+        drawTray();
+        drawLetters();
+      }
+      tray.addEventListener("pointerdown", undoLast);
       function drawTray(){
         tray.innerHTML="";
         for(let i=0;i<word.length;i++){
-          const slot=document.createElement("span"); slot.className="answer-slot"; slot.textContent=picked[i]?.letter || ""; tray.appendChild(slot);
+          const slot=document.createElement("span");
+          slot.className="answer-slot";
+          slot.textContent=picked[i]?.letter || "";
+          tray.appendChild(slot);
         }
       }
       function checkIfDone(){
         if(picked.length !== word.length) return;
         const guess=picked.map(x=>x.letter).join("").toLowerCase();
-        if(guess===word){ status.textContent="Correct!"; status.style.color="#16a34a"; addTimer(setTimeout(nextChallenge,220)); }
-        else { status.textContent="Nope — try again"; status.style.color="#dc2626"; holder.classList.add("shake"); addTimer(setTimeout(()=>holder.classList.remove("shake"),230)); }
+        if(guess===word){
+          status.textContent="Correct!";
+          status.style.color="#16a34a";
+          addTimer(setTimeout(nextChallenge,220));
+        } else {
+          status.textContent="Nope — last letter undone";
+          status.style.color="#dc2626";
+          holder.classList.add("shake");
+          tray.classList.add("shake");
+          addTimer(setTimeout(()=>{
+            holder.classList.remove("shake");
+            tray.classList.remove("shake");
+            undoLast();
+          },300));
+        }
       }
       function drawLetters(){
         holder.innerHTML="";
         letters.forEach((l,idx)=>{
-          const t=document.createElement("button"); t.type="button"; t.className="letter-tile"; t.textContent=l;
+          const t=document.createElement("button");
+          t.type="button";
+          t.className="letter-tile";
+          t.textContent=l;
           if(picked.some(x=>x.idx===idx)) t.classList.add("used");
           t.addEventListener("pointerdown",()=>{
             if(picked.some(x=>x.idx===idx) || picked.length>=word.length) return;
-            picked.push({idx,letter:l}); status.textContent=""; status.style.color=""; drawTray(); drawLetters(); checkIfDone();
+            picked.push({idx,letter:l});
+            status.textContent="";
+            status.style.color="";
+            drawTray();
+            drawLetters();
+            checkIfDone();
           });
           holder.appendChild(t);
         });
       }
-      function undo(){ picked.pop(); status.textContent=""; status.style.color=""; drawTray(); drawLetters(); }
-      function clear(){ picked=[]; status.textContent=""; status.style.color=""; drawTray(); drawLetters(); }
-      document.getElementById("scrambleUndo").addEventListener("click", undo);
-      document.getElementById("scrambleClear").addEventListener("click", clear);
-      drawTray(); drawLetters();
+      drawTray();
+      drawLetters();
     }
     function mathChallenge(){
       const p=currentRun.math; setHeader("Quick Math", "Mental math only. Answer is less than 100.", `<div class="controls"><input id="mathInput" type="number" placeholder="Answer..." inputmode="numeric"/><button id="mathSubmit" type="button">Submit</button></div>`, "mathStatus");
