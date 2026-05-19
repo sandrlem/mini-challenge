@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Daily Mini Challenge Marathon v8</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Daily Mini Challenge Marathon v9</title>
   <style>
     :root {
       --bg: #eef5ff;
@@ -16,9 +16,11 @@
       --warning: #f59e0b;
       --board: min(86vw, 520px);
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { touch-action: manipulation; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
     body {
       margin: 0; min-height: 100vh;
+      user-select: none; -webkit-user-select: none;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: radial-gradient(circle at 18% 0%, rgba(147,197,253,.55), transparent 30%), linear-gradient(135deg, #f8fbff 0%, var(--bg) 48%, #dbeafe 100%);
       color: var(--ink); padding: 18px; display: flex; justify-content: center; align-items: flex-start;
@@ -41,7 +43,7 @@
     .challenge-header h2 { margin-bottom:6px; }
     .instructions { color:var(--muted); font-weight:700; margin-bottom:12px; }
     .controls { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; } .controls input { max-width:260px; }
-    .game-board { width:var(--board); height:var(--board); margin:0 auto; border:2px solid #1d4ed8; border-radius:18px; background: radial-gradient(circle at 50% 0%, rgba(191,219,254,.75), transparent 38%), linear-gradient(180deg,#ffffff 0%,#eff6ff 100%); box-shadow: inset 0 0 0 1px rgba(147,197,253,.55), 0 14px 35px rgba(30,64,175,.12); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; touch-action:manipulation; user-select:none; }
+    .game-board { width:var(--board); height:var(--board); margin:0 auto; border:2px solid #1d4ed8; border-radius:18px; background: radial-gradient(circle at 50% 0%, rgba(191,219,254,.75), transparent 38%), linear-gradient(180deg,#ffffff 0%,#eff6ff 100%); box-shadow: inset 0 0 0 1px rgba(147,197,253,.55), 0 14px 35px rgba(30,64,175,.12); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
     .status { min-height:24px; margin-top:8px; font-weight:900; }
     .small { color:var(--muted); font-size:.9rem; } .big-center { font-size: clamp(2rem,9vw,4.4rem); font-weight: 1000; text-align:center; padding:18px; }
     .score-list, .splits-box { white-space:pre-wrap; background:#0f172a; color:#e5e7eb; border-radius:12px; padding:12px; min-height:210px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.88rem; overflow:auto; }
@@ -54,7 +56,7 @@
     .num-tile:nth-child(3n){ background:linear-gradient(145deg,#fbcfe8,#ec4899); color:white; }
     .num-tile.done { opacity:.28; transform:scale(.86); pointer-events:none; filter:saturate(.4); }
     .shake { animation: shake .22s ease; } @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
-    .bubble-target { position:absolute; left:0; top:0; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; touch-action:manipulation; }
+    .bubble-target { position:absolute; left:0; top:0; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
     .bubble { border-radius:50%; background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.85) 0 9%, transparent 10%), linear-gradient(145deg, rgba(191,219,254,.95), rgba(37,99,235,.78)); border:1px solid rgba(29,78,216,.75); box-shadow:0 10px 24px rgba(37,99,235,.22); pointer-events:none; }
     .bubble.gold { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.9) 0 9%, transparent 10%), linear-gradient(145deg, #fde68a, #f59e0b); border-color:#b45309; }
     .ring { position:absolute; width:86px; height:86px; border-radius:50%; display:grid; place-items:center; cursor:pointer; background: conic-gradient(#2563eb 0 290deg, #dbeafe 290deg 360deg); box-shadow:0 14px 25px rgba(15,23,42,.2); }
@@ -136,6 +138,16 @@
     const SUPABASE_URL = "https://cuufksysclrisxxvfwwp.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_6pLGLRDa45-58xz_vm8htA_mTbnlvhX";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+    // Mobile safety: prevent double-tap zoom / accidental page gestures during rapid arcade tapping.
+    let lastTouchEnd = 0;
+    document.addEventListener("touchend", (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 350) e.preventDefault();
+      lastTouchEnd = now;
+    }, { passive: false });
+    document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
 
     const SCRAMBLE_WORDS = ["apple","beach","brain","candy","chair","cloud","dance","dream","eagle","flame","ghost","grape","happy","horse","jelly","lemon","magic","mango","music","ninja","ocean","paint","party","pearl","pizza","plant","queen","quick","river","robot","rocket","smile","snake","spark","spoon","storm","sugar","tiger","toast","train","water","whale","zebra","badge","banjo","bloom","brick","brush","camel","charm","chess","coral","crisp","crown","daisy","delta","donut","drift","flash","flute","frost","giant","globe","honey","joker","koala","laser","lunar","maple","melon","minty","novel","olive","orbit","panda","piano","pixel","prize","raven","salsa","scarf","shell","skate","snack","solar","spice","straw","sunny","sushi","swift","tulip","vivid","waltz","yacht"];
     const GLYPHS = ["★","●","▲","■","◆","✦","⬢","✚"];
@@ -333,7 +345,7 @@
     function bubbleChallenge(){
       let popped=0, speedMult=1;
       const goal=currentRun.bubbleSeeds.length;
-      setHeader("Bubble Frenzy", `Pop all ${goal} bubbles. They get faster and smaller. Gold bubbles cause a speed burst.`, "", "bubbleStatus");
+      setHeader("Bubble Frenzy", `Pop all ${goal} bubbles. They get faster and smaller, but mobile taps are locked from zooming the page.`, "", "bubbleStatus");
       const status=document.getElementById("bubbleStatus");
       status.textContent=`Popped: 0/${goal}`;
       const bubbles=[];
@@ -358,13 +370,13 @@
         const size=Math.max(36,78-i*3), inner=Math.max(26,54-i*2);
         target.style.width=size+"px"; target.style.height=size+"px"; bubble.style.width=inner+"px"; bubble.style.height=inner+"px";
         const bw=gameBoard.clientWidth||520,bh=gameBoard.clientHeight||520;
-        const b={el:target,size,x:(seed.x/100)*(bw-size),y:(seed.y/100)*(bh-size),vx:seed.vx*(3.45+i*.42),vy:seed.vy*(3.45+i*.42),dead:false,gold:seed.gold};
+        const b={el:target,size,x:(seed.x/100)*(bw-size),y:(seed.y/100)*(bh-size),vx:seed.vx*(2.55+i*.26),vy:seed.vy*(2.55+i*.26),dead:false,gold:seed.gold};
         target.style.transform=`translate(${b.x}px,${b.y}px)`;
         target.addEventListener("pointerdown",()=>{
           if(b.dead)return;
           b.dead=true; target.remove(); popped++;
-          speedMult += b.gold ? .48 : .28;
-          status.textContent=`Popped: ${popped}/${goal}${b.gold?"  GOLD SPEED BURST!":""}`;
+          speedMult += b.gold ? .24 : .13;
+          status.textContent=`Popped: ${popped}/${goal}${b.gold?"  GOLD SPEED-UP!":""}`;
           bubbles.forEach(other=>{ if(!other.dead){ other.size=Math.max(32, other.size-3); other.el.style.width=other.size+"px"; other.el.style.height=other.size+"px"; } });
           if(popped>=goal) nextChallenge();
         });
