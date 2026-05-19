@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>Daily Mini Challenge Marathon v11</title>
+  <title>Daily Mini Challenge Marathon v13</title>
   <style>
     :root {
       --bg: #eef5ff;
@@ -39,19 +39,19 @@
     .meta-bar { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
     .pill { background:#eef2ff; border:1px solid #c7d2fe; color:#312e81; border-radius:999px; padding:7px 10px; font-weight:900; font-size:.92rem; }
     .game-pill { background:#dbeafe; border-color:#60a5fa; color:#1e3a8a; min-width: 150px; text-align:center; }
-    .challenge-header { width:var(--board); max-width:100%; margin:0 auto 10px; padding:14px; border:1px solid #93c5fd; border-radius:16px; background:linear-gradient(180deg,#ffffff 0%,#f1f7ff 100%); text-align:center; }
-    .challenge-header h2 { margin-bottom:6px; }
-    .instructions { color:var(--muted); font-weight:700; margin-bottom:12px; }
-    .controls { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; } .controls input { max-width:260px; }
+    .challenge-header { width:var(--board); max-width:100%; margin:0 auto 7px; padding:8px 10px; border:1px solid #93c5fd; border-radius:13px; background:linear-gradient(180deg,#ffffff 0%,#f1f7ff 100%); text-align:center; }
+    .challenge-header h2 { margin:0 0 3px; font-size:clamp(1.05rem,3.9vw,1.35rem); line-height:1.1; }
+    .instructions { color:var(--muted); font-weight:700; margin:0 0 6px; font-size:.88rem; line-height:1.2; }
+    .controls { display:flex; gap:6px; justify-content:center; align-items:center; flex-wrap:wrap; } .controls input { max-width:220px; }
     .game-board { width:var(--board); height:var(--board); margin:0 auto; border:2px solid #1d4ed8; border-radius:18px; background: radial-gradient(circle at 50% 0%, rgba(191,219,254,.75), transparent 38%), linear-gradient(180deg,#ffffff 0%,#eff6ff 100%); box-shadow: inset 0 0 0 1px rgba(147,197,253,.55), 0 14px 35px rgba(30,64,175,.12); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
-    .status { min-height:24px; margin-top:8px; font-weight:900; }
+    .status { min-height:20px; margin-top:5px; font-weight:900; font-size:.9rem; line-height:1.15; }
     .small { color:var(--muted); font-size:.9rem; }
     .version-badge { display:inline-block; margin:8px 0 10px; padding:5px 9px; border-radius:999px; background:#e0f2fe; border:1px solid #7dd3fc; color:#075985; font-size:.78rem; font-weight:1000; letter-spacing:.03em; }
     #challengeHeader { position: static !important; top:auto !important; z-index:auto !important; } .big-center { font-size: clamp(2rem,9vw,4.4rem); font-weight: 1000; text-align:center; padding:18px; }
     .score-list, .splits-box { white-space:pre-wrap; background:#0f172a; color:#e5e7eb; border-radius:12px; padding:12px; min-height:210px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.88rem; overflow:auto; }
     .scramble-letters, .number-grid, .sort-grid, .arrow-row { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; padding:14px; }
     .letter-tile, .num-tile, .sort-card, .arrow-key { border:3px solid #111827; border-radius:12px; background:#fef3c7; display:inline-flex; justify-content:center; align-items:center; font-weight:1000; cursor:pointer; }
-    .letter-tile { width:clamp(38px,9vw,54px); height:clamp(38px,9vw,54px); font-size:clamp(1.2rem,5vw,1.8rem); transition: transform .32s ease; }
+    .letter-tile { width:clamp(38px,9vw,54px); height:clamp(38px,9vw,54px); font-size:clamp(1.2rem,5vw,1.8rem); transition: transform .18s ease; } .letter-tile.used { opacity:.28; transform:scale(.86); pointer-events:none; } .answer-tray { min-height:52px; margin:10px auto 2px; padding:8px 10px; width:min(92%,390px); border:2px dashed #60a5fa; border-radius:14px; background:#eff6ff; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; font-weight:1000; letter-spacing:.08em; } .answer-slot { min-width:28px; height:34px; border-bottom:3px solid #1d4ed8; display:grid; place-items:center; font-size:1.35rem; }
     .num-tile { width:clamp(42px,10vw,60px); height:clamp(42px,10vw,60px); font-size:clamp(1.1rem,4.8vw,1.7rem); background:linear-gradient(145deg,#fef08a,#f97316); color:#111827; box-shadow:0 8px 16px rgba(15,23,42,.14); }
     .num-tile:nth-child(3n+1){ background:linear-gradient(145deg,#bfdbfe,#3b82f6); color:white; }
     .num-tile:nth-child(3n+2){ background:linear-gradient(145deg,#bbf7d0,#10b981); color:#052e16; }
@@ -68,8 +68,8 @@
     .meter-needle { position:absolute; top:-8px; width:7px; height:60px; background:#dc2626; border-radius:999px; }
     .stop-ghost { position:absolute; top:-8px; width:7px; height:60px; background:#111827; border-radius:999px; opacity:.8; box-shadow:0 0 0 5px rgba(220,38,38,.16); }
     .stop-ghost.hit { background:#059669; box-shadow:0 0 0 5px rgba(5,150,105,.20); }
-    .tile-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:7px; width:92%; max-width:430px; }
-    .path-tile { aspect-ratio:1; border-radius:12px; border:2px solid #1e40af; background:#dbeafe; font-weight:1000; font-size:1.3rem; cursor:pointer; }
+    .tile-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; width:88%; max-width:360px; }
+    .path-tile { aspect-ratio:1; border-radius:9px; border:1px solid #1e40af; background:#dbeafe; font-weight:1000; font-size:1rem; cursor:pointer; padding:0; min-width:0; }
     .path-tile.safe { background:#bbf7d0; } .path-tile.bad { background:#fecaca; }
     .sort-card { width:min(330px,80%); min-height:120px; font-size:clamp(1.8rem,8vw,3.2rem); background:white; text-align:center; padding:14px; }
     .sort-buttons { position:absolute; bottom:24px; left:24px; right:24px; display:flex; justify-content:space-between; gap:12px; }
@@ -85,7 +85,7 @@
     .shape-card { width:min(240px,62vw); height:min(210px,48vw); border:4px solid #111827; border-radius:22px; display:grid; place-items:center; font-size:clamp(4rem,17vw,7rem); font-weight:1000; box-shadow:0 16px 28px rgba(15,23,42,.18); }
     .shape-buttons { display:flex; gap:14px; width:min(390px,90%); }
     .shape-buttons button { flex:1; font-size:1.15rem; }
-    @media (max-width:900px){ body{padding:10px}.app{grid-template-columns:1fr}.panel{padding:12px}:root{--board:min(92vw,520px)}.challenge-header{padding:12px} }
+    @media (max-width:900px){ body{padding:10px}.app{grid-template-columns:1fr}.panel{padding:12px}:root{--board:min(92vw,520px)}.challenge-header{padding:7px 9px}.meta-bar{margin-bottom:7px}.pill{font-size:.82rem;padding:5px 8px} }
   </style>
 </head>
 <body>
@@ -115,7 +115,7 @@
           <div class="pill">Challenge <span id="challengeNum">1</span>/<span id="challengeTotal">11</span></div>
           <div class="pill game-pill">Game: <span id="currentGameLabel">----</span></div>
           <div class="pill">Time: <span id="timer">0.0</span>s</div>
-          <div class="pill">VERSION: v12-build3</div>
+          <div class="pill">VERSION: v13</div>
         </div>
         <div id="challengeHeader" class="challenge-header"></div>
         <div id="gameBoard" class="game-board"></div>
@@ -218,14 +218,13 @@
       return { prompt:`${seq[0]}, ${seq[1]}, ${seq[2]}, ${seq[3]}, ${seq[4]}, ?`, answer:seq[5], hint:"Previous two, plus 1" };
     }
     function buildTilePath(){
-      const cols=6, rows=6, safe=[];
-      let col=seededInt(1,4);
+      const cols=7, rows=7, safe=[];
+      // Start anywhere except the extreme edges, then wander. This avoids the old left-side bias.
+      let col=seededInt(2,4);
       for(let row=0; row<rows; row++){
         if(row>0){
-          let move=seededRandomItem([-2,-1,1,2]);
-          col=Math.max(0,Math.min(cols-1,col+move));
-          if(col===0 && rng()<.65) col=1;
-          if(col===cols-1 && rng()<.65) col=cols-2;
+          const options=[-2,-1,0,1,2].filter(move => col + move >= 0 && col + move < cols);
+          col += seededRandomItem(options);
         }
         safe.push(row*cols+col);
       }
@@ -330,11 +329,45 @@
       currentRun.numberOrder.forEach(n=>{ const b=document.createElement("button"); b.className="num-tile"; b.textContent=n; b.addEventListener("pointerdown",()=>{ if(n===next){ b.classList.add("done"); next++; document.getElementById("numberStatus").textContent = next>18 ? "Done!" : `Next: ${next}`; if(next>18) addTimer(setTimeout(nextChallenge,180)); } else { b.classList.add("shake"); document.getElementById("numberStatus").textContent=`Wrong — find ${next}`; addTimer(setTimeout(()=>b.classList.remove("shake"),230)); } }); grid.appendChild(b); });
     }
     function scrambleChallenge(){
-      const word=currentRun.scrambleWord; let letters=seededShuffle(word.toUpperCase().split("")); while(letters.join("")===word.toUpperCase()) letters=seededShuffle(letters);
-      setHeader("Snap Unscramble", "Unscramble the word. Type it and press Enter.", `<div class="controls"><input id="scrambleInput" type="text" placeholder="Your answer..." autocomplete="off"/><button id="scrambleSubmit" type="button">Submit</button></div>`, "scrambleStatus");
-      const holder=document.createElement("div"); holder.className="scramble-letters"; gameBoard.appendChild(holder); function draw(){ holder.innerHTML=""; letters.forEach(l=>{ const t=document.createElement("span"); t.className="letter-tile"; t.textContent=l; holder.appendChild(t); }); } draw();
-      const input=document.getElementById("scrambleInput"), status=document.getElementById("scrambleStatus"); function check(){ if(input.value.trim().toLowerCase()===word){ status.textContent="Correct!"; status.style.color="#16a34a"; addTimer(setTimeout(nextChallenge,220)); } else { status.textContent="Nope — shuffled!"; status.style.color="#dc2626"; letters=seededShuffle(letters); draw(); input.value=""; input.focus(); } }
-      document.getElementById("scrambleSubmit").addEventListener("click",check); input.addEventListener("keydown",e=>{ if(e.key==="Enter") check(); }); input.focus();
+      const word=currentRun.scrambleWord;
+      let letters=seededShuffle(word.toUpperCase().split(""));
+      while(letters.join("")===word.toUpperCase()) letters=seededShuffle(letters);
+      let picked=[];
+      setHeader("Snap Unscramble", "Tap the letters in order. No typing needed.", `<div class="controls"><button id="scrambleUndo" type="button" class="secondary">Undo</button><button id="scrambleClear" type="button" class="danger">Clear</button></div>`, "scrambleStatus");
+      const tray=document.createElement("div"); tray.className="answer-tray";
+      const holder=document.createElement("div"); holder.className="scramble-letters";
+      gameBoard.style.flexDirection="column";
+      gameBoard.appendChild(tray); gameBoard.appendChild(holder);
+      const status=document.getElementById("scrambleStatus");
+      function drawTray(){
+        tray.innerHTML="";
+        for(let i=0;i<word.length;i++){
+          const slot=document.createElement("span"); slot.className="answer-slot"; slot.textContent=picked[i]?.letter || ""; tray.appendChild(slot);
+        }
+      }
+      function checkIfDone(){
+        if(picked.length !== word.length) return;
+        const guess=picked.map(x=>x.letter).join("").toLowerCase();
+        if(guess===word){ status.textContent="Correct!"; status.style.color="#16a34a"; addTimer(setTimeout(nextChallenge,220)); }
+        else { status.textContent="Nope — try again"; status.style.color="#dc2626"; holder.classList.add("shake"); addTimer(setTimeout(()=>holder.classList.remove("shake"),230)); }
+      }
+      function drawLetters(){
+        holder.innerHTML="";
+        letters.forEach((l,idx)=>{
+          const t=document.createElement("button"); t.type="button"; t.className="letter-tile"; t.textContent=l;
+          if(picked.some(x=>x.idx===idx)) t.classList.add("used");
+          t.addEventListener("pointerdown",()=>{
+            if(picked.some(x=>x.idx===idx) || picked.length>=word.length) return;
+            picked.push({idx,letter:l}); status.textContent=""; status.style.color=""; drawTray(); drawLetters(); checkIfDone();
+          });
+          holder.appendChild(t);
+        });
+      }
+      function undo(){ picked.pop(); status.textContent=""; status.style.color=""; drawTray(); drawLetters(); }
+      function clear(){ picked=[]; status.textContent=""; status.style.color=""; drawTray(); drawLetters(); }
+      document.getElementById("scrambleUndo").addEventListener("click", undo);
+      document.getElementById("scrambleClear").addEventListener("click", clear);
+      drawTray(); drawLetters();
     }
     function mathChallenge(){
       const p=currentRun.math; setHeader("Quick Math", "Mental math only. Answer is less than 100.", `<div class="controls"><input id="mathInput" type="number" placeholder="Answer..." inputmode="numeric"/><button id="mathSubmit" type="button">Submit</button></div>`, "mathStatus");
@@ -343,9 +376,9 @@
     function bubbleChallenge(){
       let popped=0, speedMult=1;
       const isMobile = window.matchMedia("(pointer: coarse), (max-width: 700px)").matches;
-      const sourceSeeds = isMobile ? currentRun.bubbleSeeds.slice(0,10) : currentRun.bubbleSeeds;
+      const sourceSeeds = isMobile ? currentRun.bubbleSeeds.slice(0,11) : currentRun.bubbleSeeds;
       const goal=sourceSeeds.length;
-      setHeader("Bubble Frenzy", `Pop all ${goal} bubbles. Mobile mode uses slower bubbles and larger tap zones.`, "", "bubbleStatus");
+      setHeader("Bubble Frenzy", `Pop all ${goal} bubbles. Bubbles speed up slightly as you clear them.`, "", "bubbleStatus");
       const status=document.getElementById("bubbleStatus");
       status.textContent=`Popped: 0/${goal}`;
       const bubbles=[];
@@ -365,7 +398,7 @@
       function popBubble(b, target){
         if(b.dead)return;
         b.dead=true; target.remove(); popped++;
-        speedMult += isMobile ? (b.gold ? .03 : .015) : (b.gold ? .16 : .08);
+        speedMult += isMobile ? (b.gold ? .06 : .035) : (b.gold ? .14 : .075);
         status.textContent=`Popped: ${popped}/${goal}${b.gold?"  GOLD SPEED-UP!":""}`;
         bubbles.forEach(other=>{
           if(!other.dead){
@@ -382,11 +415,11 @@
         const bubble=document.createElement("div");
         bubble.className="bubble"+(seed.gold?" gold":"");
         target.className="bubble-target"; target.appendChild(bubble);
-        const size=isMobile ? Math.max(70,96-i*2) : Math.max(40,82-i*3);
-        const inner=isMobile ? Math.max(48,66-i*2) : Math.max(28,56-i*2);
+        const size=isMobile ? Math.max(64,88-i*2) : Math.max(40,82-i*3);
+        const inner=isMobile ? Math.max(44,62-i*2) : Math.max(28,56-i*2);
         target.style.width=size+"px"; target.style.height=size+"px"; bubble.style.width=inner+"px"; bubble.style.height=inner+"px";
         const bw=gameBoard.clientWidth||520,bh=gameBoard.clientHeight||520;
-        const baseSpeed = isMobile ? (0.78+i*.035) : (2.15+i*.19);
+        const baseSpeed = isMobile ? (1.12+i*.055) : (2.15+i*.19);
         const b={el:target,bubble,size,inner,x:(seed.x/100)*(bw-size),y:(seed.y/100)*(bh-size),vx:seed.vx*baseSpeed,vy:seed.vy*baseSpeed,dead:false,gold:seed.gold};
         target.style.transform=`translate(${b.x}px,${b.y}px)`;
         target.addEventListener("pointerdown",(e)=>{ e.preventDefault(); popBubble(b,target); }, { passive:false });
@@ -426,32 +459,33 @@
       const p=currentRun.codePattern; setHeader("Code Cracker", "Crack the missing number. Wrong answers reveal the pattern type.", `<div class="controls"><input id="codeInput" type="number" placeholder="Answer..." inputmode="numeric"/><button id="codeSubmit" type="button">Submit</button></div>`, "codeStatus"); const prompt=document.createElement("div"); prompt.className="big-center"; prompt.textContent=p.prompt; gameBoard.appendChild(prompt); const input=document.getElementById("codeInput"), status=document.getElementById("codeStatus"); let misses=0; function check(){ if(Number(input.value)===p.answer) nextChallenge(); else { misses++; status.textContent=misses>=2 ? `Hint: ${p.hint}` : "Not it."; status.style.color="#dc2626"; input.select(); } } document.getElementById("codeSubmit").addEventListener("click",check); input.addEventListener("keydown",e=>{ if(e.key==="Enter") check(); }); input.focus();
     }
     function tilePathChallenge(){
-      let row=0;
+      let row=0, locked=false;
       const cfg=currentRun.tilePath;
-      setHeader("Tile Path", `Find the safe tile in each row from top to bottom. ${cfg.rows} rows, ${cfg.cols} columns. One wrong tile resets the path.`, "", "tileStatus");
+      setHeader("Tile Path", `Find one safe tile per row. Wrong tile resets you to the top.`, "", "tileStatus");
       const status=document.getElementById("tileStatus"); status.textContent=`Row 1 of ${cfg.rows}`;
       const grid=document.createElement("div"); grid.className="tile-grid"; grid.style.gridTemplateColumns=`repeat(${cfg.cols},1fr)`; gameBoard.appendChild(grid);
       const buttons=[];
       function resetPath(){
-        row=0;
-        buttons.forEach(btn=>{ btn.classList.remove("safe","bad"); btn.textContent=""; });
-        status.textContent=`Row 1 of ${cfg.rows}`;
-        status.style.color="";
+        row=0; locked=false;
+        buttons.forEach(btn=>{ btn.classList.remove("safe","bad"); btn.textContent=""; btn.disabled=false; });
+        status.textContent=`Row 1 of ${cfg.rows}`; status.style.color="";
       }
       for(let i=0;i<cfg.rows*cfg.cols;i++){
         const b=document.createElement("button"); b.className="path-tile"; b.textContent=""; buttons.push(b);
         b.addEventListener("pointerdown",()=>{
+          if(locked) return;
           const r=Math.floor(i/cfg.cols);
           if(r!==row) return;
-          if(cfg.safe.includes(i)){
-            b.classList.add("safe"); b.textContent="✓"; row++;
+          if(cfg.safe[row] === i){
+            b.classList.add("safe"); b.textContent="✓"; b.disabled=true; row++;
             status.textContent = row>=cfg.rows ? "Clear!" : `Row ${row+1} of ${cfg.rows}`;
             status.style.color = row>=cfg.rows ? "#059669" : "";
-            if(row>=cfg.rows) addTimer(setTimeout(nextChallenge,220));
+            if(row>=cfg.rows){ locked=true; addTimer(setTimeout(nextChallenge,260)); }
           } else {
+            locked=true;
             b.classList.add("bad"); b.textContent="×";
-            status.textContent="Wrong tile — start over"; status.style.color="#dc2626";
-            addTimer(setTimeout(resetPath,520));
+            status.textContent="Wrong — back to row 1"; status.style.color="#dc2626";
+            addTimer(setTimeout(resetPath,620));
           }
         });
         grid.appendChild(b);
