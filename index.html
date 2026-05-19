@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-  <title>Daily Mini Challenge Marathon v9</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Daily Mini Challenge Marathon v11</title>
   <style>
     :root {
       --bg: #eef5ff;
@@ -17,7 +17,7 @@
       --board: min(86vw, 520px);
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { touch-action: none; overscroll-behavior: none; -webkit-text-size-adjust: 100%; -webkit-user-select: none; user-select: none; }
+    html, body { touch-action: pan-y; overscroll-behavior-y: auto; -webkit-text-size-adjust: 100%; }
     body {
       margin: 0; min-height: 100vh;
       user-select: none; -webkit-user-select: none;
@@ -36,14 +36,14 @@
     button:active { transform: scale(.98); } button:disabled { opacity:.5; cursor:not-allowed; }
     .secondary { background:#334155; } .success { background:var(--success); } .danger { background:var(--danger); }
     .mode-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
-    .meta-bar { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; position: sticky; top: 8px; z-index: 20; }
+    .meta-bar { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
     .pill { background:#eef2ff; border:1px solid #c7d2fe; color:#312e81; border-radius:999px; padding:7px 10px; font-weight:900; font-size:.92rem; }
     .game-pill { background:#dbeafe; border-color:#60a5fa; color:#1e3a8a; min-width: 150px; text-align:center; }
-    .challenge-header { width:var(--board); max-width:100%; margin:0 auto 10px; padding:14px; border:1px solid #93c5fd; border-radius:16px; background:linear-gradient(180deg,#ffffff 0%,#f1f7ff 100%); text-align:center; position: sticky; top: 55px; z-index: 10; }
+    .challenge-header { width:var(--board); max-width:100%; margin:0 auto 10px; padding:14px; border:1px solid #93c5fd; border-radius:16px; background:linear-gradient(180deg,#ffffff 0%,#f1f7ff 100%); text-align:center; }
     .challenge-header h2 { margin-bottom:6px; }
     .instructions { color:var(--muted); font-weight:700; margin-bottom:12px; }
     .controls { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; } .controls input { max-width:260px; }
-    .game-board { width:var(--board); height:var(--board); margin:0 auto; border:2px solid #1d4ed8; border-radius:18px; background: radial-gradient(circle at 50% 0%, rgba(191,219,254,.75), transparent 38%), linear-gradient(180deg,#ffffff 0%,#eff6ff 100%); box-shadow: inset 0 0 0 1px rgba(147,197,253,.55), 0 14px 35px rgba(30,64,175,.12); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+    .game-board { width:var(--board); height:var(--board); margin:0 auto; border:2px solid #1d4ed8; border-radius:18px; background: radial-gradient(circle at 50% 0%, rgba(191,219,254,.75), transparent 38%), linear-gradient(180deg,#ffffff 0%,#eff6ff 100%); box-shadow: inset 0 0 0 1px rgba(147,197,253,.55), 0 14px 35px rgba(30,64,175,.12); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
     .status { min-height:24px; margin-top:8px; font-weight:900; }
     .small { color:var(--muted); font-size:.9rem; } .big-center { font-size: clamp(2rem,9vw,4.4rem); font-weight: 1000; text-align:center; padding:18px; }
     .score-list, .splits-box { white-space:pre-wrap; background:#0f172a; color:#e5e7eb; border-radius:12px; padding:12px; min-height:210px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.88rem; overflow:auto; }
@@ -56,7 +56,7 @@
     .num-tile:nth-child(3n){ background:linear-gradient(145deg,#fbcfe8,#ec4899); color:white; }
     .num-tile.done { opacity:.28; transform:scale(.86); pointer-events:none; filter:saturate(.4); }
     .shake { animation: shake .22s ease; } @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
-    .bubble-target { position:absolute; left:0; top:0; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+    .bubble-target { position:absolute; left:0; top:0; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
     .bubble { border-radius:50%; background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.85) 0 9%, transparent 10%), linear-gradient(145deg, rgba(191,219,254,.95), rgba(37,99,235,.78)); border:1px solid rgba(29,78,216,.75); box-shadow:0 10px 24px rgba(37,99,235,.22); pointer-events:none; }
     .bubble.gold { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.9) 0 9%, transparent 10%), linear-gradient(145deg, #fde68a, #f59e0b); border-color:#b45309; }
     .ring { position:absolute; width:86px; height:86px; border-radius:50%; display:grid; place-items:center; cursor:pointer; background: conic-gradient(#2563eb 0 290deg, #dbeafe 290deg 360deg); box-shadow:0 14px 25px rgba(15,23,42,.2); }
@@ -83,7 +83,7 @@
     .shape-card { width:min(240px,62vw); height:min(210px,48vw); border:4px solid #111827; border-radius:22px; display:grid; place-items:center; font-size:clamp(4rem,17vw,7rem); font-weight:1000; box-shadow:0 16px 28px rgba(15,23,42,.18); }
     .shape-buttons { display:flex; gap:14px; width:min(390px,90%); }
     .shape-buttons button { flex:1; font-size:1.15rem; }
-    @media (max-width:900px){ body{padding:10px}.app{grid-template-columns:1fr}.panel{padding:12px}:root{--board:min(92vw,520px)}.challenge-header{top:88px;padding:12px} }
+    @media (max-width:900px){ body{padding:10px}.app{grid-template-columns:1fr}.panel{padding:12px}:root{--board:min(92vw,520px)}.challenge-header{padding:12px} }
   </style>
 </head>
 <body>
@@ -91,7 +91,7 @@
     <section class="panel">
       <div id="startScreen" class="screen active">
         <div class="name-card">
-          <h1>Daily Mini Challenge Marathon v8</h1>
+          <h1>Daily Mini Challenge Marathon v11</h1>
           <p class="instructions">One timer. Every mini-game in the challenge. Daily Mode keeps the same content for the same date.</p>
           <div class="pill" style="display:inline-block;margin-bottom:10px">Daily Run: <span id="startGameCode">----</span></div>
           <p class="small">Daily Mode is leaderboard eligible. Practice Mode is randomized and does not save.</p>
@@ -140,28 +140,9 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
-    // Mobile safety: hard-lock browser zoom/scroll gestures during arcade play.
-    // iOS Safari can still zoom despite viewport settings, so we also block
-    // double-tap, pinch, wheel-zoom, and touch scrolling while the game screen is active.
-    let lastTouchEnd = 0;
-    function isPlayingGame() { return gameScreen && gameScreen.classList.contains("active"); }
-    function isArcadeTouchTarget(e) { return isPlayingGame() && e.target && e.target.closest && e.target.closest("#gameBoard, button"); }
-    document.addEventListener("touchstart", (e) => {
-      if (e.touches && e.touches.length > 1) e.preventDefault();
-      if (isArcadeTouchTarget(e)) e.preventDefault();
-    }, { passive: false });
-    document.addEventListener("touchmove", (e) => {
-      if (isPlayingGame()) e.preventDefault();
-    }, { passive: false });
-    document.addEventListener("touchend", (e) => {
-      const now = Date.now();
-      if (now - lastTouchEnd <= 500 || isArcadeTouchTarget(e)) e.preventDefault();
-      lastTouchEnd = now;
-    }, { passive: false });
-    document.addEventListener("dblclick", (e) => e.preventDefault(), { passive: false });
-    document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
-    document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
-    document.addEventListener("wheel", (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+    // Mobile safety: keep the page scrollable. Avoid global touch blocking.
+    // Individual fast-tap targets use touch-action: manipulation, and bubble taps
+    // only suppress the tap itself instead of locking the whole page.
 
     const SCRAMBLE_WORDS = ["apple","beach","brain","candy","chair","cloud","dance","dream","eagle","flame","ghost","grape","happy","horse","jelly","lemon","magic","mango","music","ninja","ocean","paint","party","pearl","pizza","plant","queen","quick","river","robot","rocket","smile","snake","spark","spoon","storm","sugar","tiger","toast","train","water","whale","zebra","badge","banjo","bloom","brick","brush","camel","charm","chess","coral","crisp","crown","daisy","delta","donut","drift","flash","flute","frost","giant","globe","honey","joker","koala","laser","lunar","maple","melon","minty","novel","olive","orbit","panda","piano","pixel","prize","raven","salsa","scarf","shell","skate","snack","solar","spice","straw","sunny","sushi","swift","tulip","vivid","waltz","yacht"];
     const GLYPHS = ["★","●","▲","■","◆","✦","⬢","✚"];
@@ -381,7 +362,7 @@
       function popBubble(b, target){
         if(b.dead)return;
         b.dead=true; target.remove(); popped++;
-        speedMult += isMobile ? (b.gold ? .045 : .025) : (b.gold ? .16 : .08);
+        speedMult += isMobile ? (b.gold ? .03 : .015) : (b.gold ? .16 : .08);
         status.textContent=`Popped: ${popped}/${goal}${b.gold?"  GOLD SPEED-UP!":""}`;
         bubbles.forEach(other=>{
           if(!other.dead){
@@ -402,11 +383,10 @@
         const inner=isMobile ? Math.max(48,66-i*2) : Math.max(28,56-i*2);
         target.style.width=size+"px"; target.style.height=size+"px"; bubble.style.width=inner+"px"; bubble.style.height=inner+"px";
         const bw=gameBoard.clientWidth||520,bh=gameBoard.clientHeight||520;
-        const baseSpeed = isMobile ? (1.05+i*.055) : (2.15+i*.19);
+        const baseSpeed = isMobile ? (0.78+i*.035) : (2.15+i*.19);
         const b={el:target,bubble,size,inner,x:(seed.x/100)*(bw-size),y:(seed.y/100)*(bh-size),vx:seed.vx*baseSpeed,vy:seed.vy*baseSpeed,dead:false,gold:seed.gold};
         target.style.transform=`translate(${b.x}px,${b.y}px)`;
         target.addEventListener("pointerdown",(e)=>{ e.preventDefault(); popBubble(b,target); }, { passive:false });
-        target.addEventListener("touchstart",(e)=>{ e.preventDefault(); popBubble(b,target); }, { passive:false });
         bubbles.push(b); gameBoard.appendChild(target);
       }
     }
